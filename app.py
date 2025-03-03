@@ -1,7 +1,8 @@
 import os
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from dotenv import load_dotenv
+import io 
 
 load_dotenv()
 
@@ -10,9 +11,11 @@ AUDD_API_URL = os.getenv("AUDD_API_URL")
 CATALOGUE_API_URL = "http://localhost:5001/tracks/audio" 
 
 app = Flask(__name__)
-def check_track_in_catalogue(title, artist):
+def get_track_audio(title, artist):
     response = requests.post(CATALOGUE_API_URL, json={"title": title, "artist": artist})
-    return response.status_code == 200  
+    if response.status_code == 200:
+        return response.content, response.headers.get('Content-Type') 
+    return None, None
 
 @app.route('/recognize', methods=['POST'])
 def recognize():
@@ -35,13 +38,17 @@ def recognize():
         if is_success:
             track_info = result["result"]
             title, artist = track_info.get("title"), track_info.get("artist")
-            exists = check_track_in_catalogue(title, artist)
+            
 
-            return jsonify({
-                "title": title,
-                "artist": artist,
-                "exists_in_database": exists
-            }), 200 if exists else 404
+            audio_content, content_type = get_track_audio(title, artist)
+
+            if audio_content:
+                return send_file(
+                    io.BytesIO(audio_content),
+                    mimetype=content_type,
+                    as_attachment=True,
+                    download_name=f"{title} - {artist}.mp3"
+                )
 
         return jsonify({
             "error": "Track not recognized",
