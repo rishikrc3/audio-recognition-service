@@ -26,41 +26,24 @@ class TestRecognitionService(unittest.TestCase):
     #     self.assertEqual(rsp.status_code, 404)
     #     self.assertIn("No file selected", rsp.json()["error"])
 
-    # def test_recognize_audd_api_failure(self):
-    #     """❌ Test when AudD API is down."""
-    #     with open("/Users/rishik/Desktop/Recognition/test_audio.wav", "rb") as f:
-    #         files = {"file": ("test_audio.wav", f, "audio/wav")}
-    #         rsp = requests.post(BASE_URL, files=files)
+   
+    def test_recognize_track_not_found(self):
+        with open("/Users/rishik/Desktop/Catelogue/wavs/~Davos.wav", "rb") as f:
+            files = {"file": ("unknown_audio.wav", f, "audio/wav")}
+            rsp = requests.post(BASE_URL, files=files)
         
-    #     self.assertEqual(rsp.status_code, 500)
-    #     self.assertIn("AudD API request failed", rsp.json()["error"])
+        self.assertEqual(rsp.status_code, 404)
+        self.assertIn("Track not recognized", rsp.json()["error"])
 
-    # def test_recognize_track_not_found(self):
-    #     """❌ Test when AudD API does not recognize the track."""
-    #     with open("/Users/rishik/Desktop/Recognition/unknown_audio.wav", "rb") as f:
-    #         files = {"file": ("unknown_audio.wav", f, "audio/wav")}
-    #         rsp = requests.post(BASE_URL, files=files)
+    def test_recognize_track_not_in_catalog(self):
+       
+        with open("/Users/rishik/Desktop/Catelogue/wavs/~Don't Look Back In Anger.wav", "rb") as f:
+            files = {"file": ("recognized_but_missing.wav", f, "audio/wav")}
+            rsp = requests.post(BASE_URL, files=files)
         
-    #     self.assertEqual(rsp.status_code, 404)
-    #     self.assertIn("Track not recognized", rsp.json()["error"])
+        self.assertEqual(rsp.status_code, 404)
+        self.assertIn("Track not recognized", rsp.json()["error"])
 
-    # def test_recognize_track_not_in_catalog(self):
-    #     """❌ Test when track is recognized but not found in the catalog."""
-    #     with open("/Users/rishik/Desktop/Recognition/recognized_but_missing.wav", "rb") as f:
-    #         files = {"file": ("recognized_but_missing.wav", f, "audio/wav")}
-    #         rsp = requests.post(BASE_URL, files=files)
-        
-    #     self.assertEqual(rsp.status_code, 404)
-    #     self.assertIn("Track not recognized or not found", rsp.json()["error"])
-
-    # def test_recognize_catalog_service_failure(self):
-    #     """❌ Test when track is recognized but catalog service is down."""
-    #     with open("/Users/rishik/Desktop/Recognition/test_audio.wav", "rb") as f:
-    #         files = {"file": ("test_audio.wav", f, "audio/wav")}
-    #         rsp = requests.post(BASE_URL, files=files)
-        
-    #     self.assertEqual(rsp.status_code, 500)
-    #     self.assertIn("Track retrieval failed", rsp.json()["error"])
 
 if __name__ == "__main__":
     unittest.main()
