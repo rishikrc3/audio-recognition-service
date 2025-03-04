@@ -9,6 +9,12 @@ load_dotenv()
 AUDD_API_KEY = os.getenv("AUDD_API_KEY")
 AUDD_API_URL = os.getenv("AUDD_API_URL")
 CATALOGUE_API_URL = "http://localhost:5001/tracks/audio" 
+ALLOWED_EXTENSIONS = {'.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a'}
+
+
+def is_allowed_extension(filename):
+    return filename.lower().endswith(tuple(ALLOWED_EXTENSIONS))
+
 
 app = Flask(__name__)
 def get_track_audio(title, artist):
@@ -23,11 +29,14 @@ def recognize():
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files['file']
-    if file.filename == '':
+    if file.filename == '' :
         return jsonify({"error": "No file selected"}), 400
+    
+    if not is_allowed_extension(file.filename):
+        return jsonify({"error": "Invalid file type. Only music files are allowed."}), 415
+
     try:
         response = requests.post(AUDD_API_URL,data={'api_token': AUDD_API_KEY},files={'file': (file.filename, file.stream, file.content_type)})
-
         result = response.json()
         is_success = result.get('status') == 'success' and result.get('result')
 
@@ -37,7 +46,7 @@ def recognize():
             audio_content, content_type = get_track_audio(title, artist)
             if audio_content:
                 return send_file(io.BytesIO(audio_content),mimetype=content_type)
-
+            return jsonify({"error": "Track recognized but not found","api_response": result}), 404    
         return jsonify({"error": "Track not recognized","api_response": result}), 404
     
 

@@ -20,6 +20,7 @@ class TestRecognitionService(unittest.TestCase):
         self.assertEqual(rsp.status_code, 400)
         self.assertIn("No file uploaded", rsp.json()["error"])
 
+    #yet to be tested, failing
     # def test_recognize_empty_file(self):
     #     files = {"file": ("empty.mp3", io.BytesIO(b""), "audio/mpeg")}
     #     rsp = requests.post(BASE_URL, files=files)
@@ -42,7 +43,7 @@ class TestRecognitionService(unittest.TestCase):
             rsp = requests.post(BASE_URL, files=files)
         
         self.assertEqual(rsp.status_code, 404)
-        self.assertIn("Track not recognized", rsp.json()["error"])
+        self.assertIn("Track recognized but not found", rsp.json()["error"])
 
 
 if __name__ == "__main__":
