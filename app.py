@@ -26,34 +26,19 @@ def recognize():
     if file.filename == '':
         return jsonify({"error": "No file selected"}), 400
     try:
-        response = requests.post(
-            AUDD_API_URL,
-            data={'api_token': AUDD_API_KEY},
-            files={'file': (file.filename, file.stream, file.content_type)}  
-           
-        )
+        response = requests.post(AUDD_API_URL,data={'api_token': AUDD_API_KEY},files={'file': (file.filename, file.stream, file.content_type)})
+
         result = response.json()
         is_success = result.get('status') == 'success' and result.get('result')
 
         if is_success:
             track_info = result["result"]
             title, artist = track_info.get("title"), track_info.get("artist")
-            
-
             audio_content, content_type = get_track_audio(title, artist)
-
             if audio_content:
-                return send_file(
-                    io.BytesIO(audio_content),
-                    mimetype=content_type,
-                    as_attachment=True,
-                    download_name=f"{title} - {artist}.mp3"
-                )
+                return send_file(io.BytesIO(audio_content),mimetype=content_type)
 
-        return jsonify({
-            "error": "Track not recognized",
-            "api_response": result
-        }), 404
+        return jsonify({"error": "Track not recognized","api_response": result}), 404
     
 
     except Exception as e:
